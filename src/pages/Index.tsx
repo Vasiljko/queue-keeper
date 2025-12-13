@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, ShoppingCart, Loader2, PackageCheck } from "lucide-react";
+import { Users, ShoppingCart, Loader2, PackageCheck, ExternalLink, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ interface QueueItem {
   total_slots: number;
   current_count: number;
   image: string | null;
+  price: number | null;
+  store_url: string | null;
 }
 
 const Index = () => {
@@ -164,6 +166,21 @@ const Index = () => {
             <h2 className="text-lg font-semibold text-foreground mb-1">
               {selectedItem.name}
             </h2>
+            {selectedItem.price && (
+              <p className="text-2xl font-bold text-primary mb-2">
+                ${selectedItem.price.toLocaleString()}
+              </p>
+            )}
+            {selectedItem.store_url && (
+              <a 
+                href={selectedItem.store_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-3"
+              >
+                View on store <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
             <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
               Users in Queue
             </p>
@@ -212,8 +229,8 @@ const Index = () => {
             </Button>
           ) : (
             <div className="w-full h-14 flex items-center justify-center gap-2 rounded-xl glass border border-primary/30">
-              <PackageCheck className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-foreground">Packages Sent!</span>
+              <Clock className="w-5 h-5 text-primary animate-pulse" />
+              <span className="font-semibold text-foreground">Waiting for queue to fill up...</span>
             </div>
           )}
         </div>

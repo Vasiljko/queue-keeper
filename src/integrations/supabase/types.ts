@@ -21,6 +21,8 @@ export type Database = {
           id: string
           image: string | null
           name: string
+          price: number | null
+          store_url: string | null
           total_slots: number
           updated_at: string
         }
@@ -30,6 +32,8 @@ export type Database = {
           id?: string
           image?: string | null
           name: string
+          price?: number | null
+          store_url?: string | null
           total_slots?: number
           updated_at?: string
         }
@@ -39,6 +43,8 @@ export type Database = {
           id?: string
           image?: string | null
           name?: string
+          price?: number | null
+          store_url?: string | null
           total_slots?: number
           updated_at?: string
         }
