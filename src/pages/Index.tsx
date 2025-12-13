@@ -14,7 +14,8 @@ interface QueueItem {
   store_url: string | null;
 }
 
-// Demo settings - 10% discount from negotiation
+// Demo settings - match TrackedItems pricing
+const ORIGINAL_PRICE = 1999;
 const DISCOUNT_PERCENT = 10;
 
 const Index = () => {
@@ -50,7 +51,7 @@ const Index = () => {
 
   // Initialize counter at 53 and simulate random growth (for demo purposes, always run)
   useEffect(() => {
-    if (!selectedItem) return;
+    if (!selectedItem || isSent) return; // Don't run simulation if user has joined
     
     // Start at 53 for demo
     setAnimatedCount(53);
@@ -71,27 +72,20 @@ const Index = () => {
     scheduleNextIncrement();
 
     return () => clearTimeout(timeoutId);
-  }, [selectedItem]);
+  }, [selectedItem, isSent]);
 
   const handleJoinQueue = async () => {
     if (!selectedItem) return;
     
     setIsLoading(true);
     
-    // Increment count by 1
-    const newCount = selectedItem.current_count + 1;
-    await supabase
-      .from('queue_items')
-      .update({ current_count: newCount })
-      .eq('id', selectedItem.id);
+    // Increment from current animated count (not DB value)
+    const newCount = animatedCount + 1;
 
     setTimeout(() => {
       setIsLoading(false);
       setIsSent(true);
       setAnimatedCount(newCount);
-      
-      // Update selected item locally
-      setSelectedItem({ ...selectedItem, current_count: newCount });
       
       toast({
         title: "You're in the queue!",
@@ -165,21 +159,19 @@ const Index = () => {
             <h2 className="text-lg font-semibold text-foreground mb-1">
               {selectedItem.name}
             </h2>
-            {selectedItem.price && (
-              <div className="mb-2">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-lg text-muted-foreground line-through">
-                    ${selectedItem.price.toLocaleString()}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-xs font-bold">
-                    {DISCOUNT_PERCENT}% OFF
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-green-500">
-                  ${Math.round(selectedItem.price * (1 - DISCOUNT_PERCENT / 100)).toLocaleString()}
-                </p>
+            <div className="mb-2">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-lg text-muted-foreground line-through">
+                  ${ORIGINAL_PRICE.toLocaleString()}
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-xs font-bold">
+                  {DISCOUNT_PERCENT}% OFF
+                </span>
               </div>
-            )}
+              <p className="text-2xl font-bold text-green-500">
+                ${Math.round(ORIGINAL_PRICE * (1 - DISCOUNT_PERCENT / 100)).toLocaleString()}
+              </p>
+            </div>
             {selectedItem.store_url && (
               <a 
                 href={selectedItem.store_url} 
