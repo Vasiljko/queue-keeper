@@ -43,7 +43,7 @@ serve(async (req) => {
           {
             role: "system",
             content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. Try to search for at least 5 different urls. ALWAYS make sure that the given URL with minimum price is valid and the product exists and is in stock. Try to search local retailers first. ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
-{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page"}`,
+{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page", "image_url": "https://direct-image-url.jpg"}`,
           },
           {
             role: "user",
@@ -57,6 +57,7 @@ Based on the URL, determine:
 3. The lowest current price you can find
 4. Which store has the lowest price
 5. The direct URL to the product page at the store with the lowest price
+6. A direct image URL for this product (find an official product image from the manufacturer or a major retailer - must be a direct .jpg, .png, or .webp URL)
 
 Respond with ONLY the JSON object, no other text.`,
           },
@@ -103,6 +104,7 @@ Respond with ONLY the JSON object, no other text.`,
         lowest_price: productInfo.lowest_price,
         store: productInfo.store,
         store_url: productInfo.store_url,
+        image: productInfo.image_url || null,
       })
       .select()
       .single();
