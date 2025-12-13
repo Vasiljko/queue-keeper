@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      queue_items: {
+        Row: {
+          created_at: string
+          current_count: number
+          id: string
+          image: string | null
+          name: string
+          total_slots: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_count?: number
+          id?: string
+          image?: string | null
+          name: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_count?: number
+          id?: string
+          image?: string | null
+          name?: string
+          total_slots?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tracked_items: {
         Row: {
           brand: string | null

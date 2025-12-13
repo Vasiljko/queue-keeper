@@ -2,3 +2,6 @@ project_id = "cdugwksvbppdmbuqnjzy"
 
 [functions.track-product]
 verify_jwt = false
+
+[functions.queue-item]
+verify_jwt = false
