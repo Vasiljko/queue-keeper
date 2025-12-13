@@ -24,25 +24,26 @@ serve(async (req) => {
 
     console.log('Tracking product from URL:', url);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY');
+    if (!PERPLEXITY_API_KEY) {
+      throw new Error('PERPLEXITY_API_KEY is not configured');
     }
 
-    // Step 1: Use AI to analyze the product URL and extract product info
-    console.log('Analyzing product with AI...');
-    const analysisResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Step 1: Use Perplexity API to analyze the product URL and find best prices
+    console.log('Analyzing product with Perplexity...');
+    const analysisResponse = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'sonar',
         messages: [
           {
             role: 'system',
-            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found.`
+            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
+{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page"}`
           },
           {
             role: 'user',
@@ -55,50 +56,37 @@ Based on the URL, determine:
 2. The brand
 3. The lowest current price you can find
 4. Which store has the lowest price
-5. The direct URL to the product page at the store with the lowest price`
+5. The direct URL to the product page at the store with the lowest price
+
+Respond with ONLY the JSON object, no other text.`
           }
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "extract_product_info",
-              description: "Extract product information and best price with store URL",
-              parameters: {
-                type: "object",
-                properties: {
-                  name: { type: "string", description: "Product name" },
-                  brand: { type: "string", description: "Brand name" },
-                  lowest_price: { type: "number", description: "Lowest price found" },
-                  store: { type: "string", description: "Store name with lowest price" },
-                  store_url: { type: "string", description: "Direct URL to buy the product at the lowest price store" }
-                },
-                required: ["name", "brand", "lowest_price", "store", "store_url"],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "extract_product_info" } }
       }),
     });
 
     if (!analysisResponse.ok) {
       const errorText = await analysisResponse.text();
-      console.error('AI analysis failed:', analysisResponse.status, errorText);
+      console.error('Perplexity API failed:', analysisResponse.status, errorText);
       throw new Error('Failed to analyze product');
     }
 
     const analysisData = await analysisResponse.json();
-    console.log('AI response:', JSON.stringify(analysisData, null, 2));
+    console.log('Perplexity response:', JSON.stringify(analysisData, null, 2));
 
-    // Extract the tool call result
-    const toolCall = analysisData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      throw new Error('AI did not return product information');
+    // Extract the response content
+    const responseContent = analysisData.choices?.[0]?.message?.content;
+    if (!responseContent) {
+      throw new Error('Perplexity did not return product information');
     }
 
-    const productInfo = JSON.parse(toolCall.function.arguments);
+    // Parse the JSON from the response
+    let productInfo;
+    try {
+      productInfo = JSON.parse(responseContent);
+    } catch (e) {
+      console.error('Failed to parse product info JSON:', responseContent);
+      throw new Error('Failed to parse product information');
+    }
     console.log('Extracted product info:', productInfo);
 
     // Step 2: Save to database
