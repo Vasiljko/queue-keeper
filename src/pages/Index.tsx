@@ -9,6 +9,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const targetCount = 59;
   const maxCap = 60;
+  const itemName = "Limited Edition Sneakers";
 
   // Animate counter on load
   useEffect(() => {
@@ -55,6 +56,9 @@ const Index = () => {
           </div>
           
           <div>
+            <h2 className="text-lg font-semibold text-foreground mb-1">
+              {itemName}
+            </h2>
             <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
               Users in Queue
             </p>
