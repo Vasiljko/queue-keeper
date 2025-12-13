@@ -78,8 +78,8 @@ const Index = () => {
     
     setIsLoading(true);
     
-    // Update count in database
-    const newCount = selectedItem.total_slots;
+    // Increment count by 1
+    const newCount = selectedItem.current_count + 1;
     await supabase
       .from('queue_items')
       .update({ current_count: newCount })
@@ -89,9 +89,13 @@ const Index = () => {
       setIsLoading(false);
       setIsSent(true);
       setAnimatedCount(newCount);
+      
+      // Update selected item locally
+      setSelectedItem({ ...selectedItem, current_count: newCount });
+      
       toast({
-        title: "Packages Sent!",
-        description: "Your order has been processed and packages are on their way.",
+        title: "You're in the queue!",
+        description: `Position ${newCount} of ${selectedItem.total_slots}. We'll notify you when it's your turn.`,
       });
     }, 1000);
   };
