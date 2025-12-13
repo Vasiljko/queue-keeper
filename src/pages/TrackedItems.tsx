@@ -1,8 +1,37 @@
 import { useState, useEffect } from "react";
-import { Package, X, Loader2 } from "lucide-react";
+import { Package, X, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+const getProductImage = (name: string | null) => {
+  const searchTerm = name?.toLowerCase() || 'product';
+  if (searchTerm.includes('headphone') || searchTerm.includes('audio')) {
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('laptop') || searchTerm.includes('macbook') || searchTerm.includes('computer')) {
+    return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('phone') || searchTerm.includes('iphone') || searchTerm.includes('samsung')) {
+    return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('shoe') || searchTerm.includes('sneaker') || searchTerm.includes('nike') || searchTerm.includes('adidas')) {
+    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('watch') || searchTerm.includes('apple watch')) {
+    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('camera') || searchTerm.includes('canon') || searchTerm.includes('sony')) {
+    return 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('tv') || searchTerm.includes('television') || searchTerm.includes('monitor')) {
+    return 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('keyboard') || searchTerm.includes('mouse')) {
+    return 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop';
+  }
+  return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
+};
 
 interface TrackedItem {
   id: string;
@@ -123,18 +152,25 @@ const TrackedItems = () => {
                 key={item.id}
                 className="glass rounded-xl p-4 border border-border/50 flex items-center gap-4"
               >
-                {item.image && (
-                  <img
-                    src={item.image}
-                    alt={item.name || 'Product'}
-                    className="w-16 h-16 rounded-lg object-cover"
-                  />
-                )}
+                <img
+                  src={item.image || getProductImage(item.name)}
+                  alt={item.name || 'Product'}
+                  className="w-16 h-16 rounded-lg object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = getProductImage(item.name);
+                  }}
+                />
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-sm truncate">
+                  <a 
+                    href={item.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-semibold text-foreground text-sm truncate block hover:text-primary transition-colors group"
+                  >
                     {item.name || 'Unknown Product'}
-                  </h3>
+                    <ExternalLink className="w-3 h-3 inline ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
                   {item.store && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {item.store}
