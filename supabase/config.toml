@@ -1,1 +1,4 @@
 project_id = "cdugwksvbppdmbuqnjzy"
+
+[functions.track-product]
+verify_jwt = false

@@ -1,58 +1,90 @@
-import { useState } from "react";
-import { Package, TrendingDown, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Package, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TrackedItem {
   id: string;
-  name: string;
-  image: string;
-  originalPrice: number;
-  lowestPrice: number;
-  store: string;
+  name: string | null;
+  brand: string | null;
+  image: string | null;
+  lowest_price: number | null;
+  store: string | null;
+  url: string;
 }
 
-const initialItems: TrackedItem[] = [
-  {
-    id: "1",
-    name: "Sony WH-1000XM5 Headphones",
-    image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=200&h=200&fit=crop",
-    originalPrice: 399.99,
-    lowestPrice: 279.99,
-    store: "Amazon",
-  },
-  {
-    id: "2",
-    name: "MacBook Pro 14\" M3",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200&h=200&fit=crop",
-    originalPrice: 1999.99,
-    lowestPrice: 1749.99,
-    store: "Best Buy",
-  },
-  {
-    id: "3",
-    name: "Nike Air Max 90",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop",
-    originalPrice: 130.00,
-    lowestPrice: 89.99,
-    store: "Nike",
-  },
-];
-
 const TrackedItems = () => {
-  const [items, setItems] = useState<TrackedItem[]>(initialItems);
+  const [items, setItems] = useState<TrackedItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleUntrack = (id: string, name: string) => {
-    setItems(items.filter(item => item.id !== id));
-    toast({
-      title: "Item untracked",
-      description: `${name} has been removed from your tracking list.`,
-    });
+  const fetchItems = async () => {
+    const { data, error } = await supabase
+      .from('tracked_items')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching items:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load tracked items.",
+        variant: "destructive",
+      });
+    } else {
+      setItems(data || []);
+    }
+    setLoading(false);
   };
 
-  const calculateDiscount = (original: number, lowest: number) => {
-    return Math.round(((original - lowest) / original) * 100);
+  useEffect(() => {
+    fetchItems();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('tracked_items_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tracked_items' },
+        () => {
+          fetchItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleUntrack = async (id: string, name: string | null) => {
+    const { error } = await supabase
+      .from('tracked_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to untrack item.",
+        variant: "destructive",
+      });
+    } else {
+      setItems(items.filter(item => item.id !== id));
+      toast({
+        title: "Item untracked",
+        description: `${name || 'Item'} has been removed from your tracking list.`,
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -81,6 +113,9 @@ const TrackedItems = () => {
           {items.length === 0 ? (
             <div className="text-center py-12 glass rounded-xl border border-border/50">
               <p className="text-muted-foreground">No items being tracked</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Send a POST request to /functions/v1/track-product with a product URL
+              </p>
             </div>
           ) : (
             items.map((item) => (
@@ -88,31 +123,30 @@ const TrackedItems = () => {
                 key={item.id}
                 className="glass rounded-xl p-4 border border-border/50 flex items-center gap-4"
               >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-16 h-16 rounded-lg object-cover"
-                />
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.name || 'Product'}
+                    className="w-16 h-16 rounded-lg object-cover"
+                  />
+                )}
                 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground text-sm truncate">
-                    {item.name}
+                    {item.name || 'Unknown Product'}
                   </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.store}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-lg font-bold text-primary">
-                      ${item.lowestPrice.toFixed(2)}
-                    </span>
-                    <span className="text-xs text-muted-foreground line-through">
-                      ${item.originalPrice.toFixed(2)}
-                    </span>
-                    <span className="inline-flex items-center text-xs font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
-                      <TrendingDown className="w-3 h-3 mr-0.5" />
-                      {calculateDiscount(item.originalPrice, item.lowestPrice)}%
-                    </span>
-                  </div>
+                  {item.store && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {item.store}
+                    </p>
+                  )}
+                  {item.lowest_price && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-lg font-bold text-primary">
+                        ${Number(item.lowest_price).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <Button

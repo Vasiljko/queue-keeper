@@ -14,7 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tracked_items: {
+        Row: {
+          brand: string | null
+          created_at: string
+          id: string
+          image: string | null
+          lowest_price: number | null
+          name: string | null
+          store: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image?: string | null
+          lowest_price?: number | null
+          name?: string | null
+          store?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          id?: string
+          image?: string | null
+          lowest_price?: number | null
+          name?: string | null
+          store?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
