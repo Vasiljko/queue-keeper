@@ -90,7 +90,51 @@ Respond with ONLY the JSON object, no other text.`,
     }
     console.log("Extracted product info:", productInfo);
 
-    // Step 2: Save to database
+    // Step 2: Use Perplexity to find a real product image
+    console.log("Searching for product image with Perplexity...");
+    const imageResponse = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          {
+            role: "system",
+            content: `You are an image URL finder. Given product information, search for and return ONLY a direct URL to a real product image. The URL must be a direct link to an image file (ending in .jpg, .png, .webp, or from a CDN). Do NOT return placeholder images or generic category images. Return ONLY the raw URL, no JSON, no quotes, no other text.`,
+          },
+          {
+            role: "user",
+            content: `Find a real product image URL for this product:
+Product Name: ${productInfo.name}
+Brand: ${productInfo.brand}
+Store: ${productInfo.store}
+
+Search for an official product photo from ${productInfo.brand}'s website, ${productInfo.store}, or major retailers like Amazon, Best Buy, or Walmart. Return ONLY the direct image URL, nothing else.`,
+          },
+        ],
+      }),
+    });
+
+    let imageUrl = null;
+    if (imageResponse.ok) {
+      const imageData = await imageResponse.json();
+      const imageContent = imageData.choices?.[0]?.message?.content?.trim();
+      console.log("Image search response:", imageContent);
+      
+      // Validate it looks like a URL
+      if (imageContent && (imageContent.startsWith('http://') || imageContent.startsWith('https://'))) {
+        imageUrl = imageContent;
+      }
+    } else {
+      console.error("Image search failed:", await imageResponse.text());
+    }
+
+    console.log("Final image URL:", imageUrl);
+
+    // Step 3: Save to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -104,7 +148,7 @@ Respond with ONLY the JSON object, no other text.`,
         lowest_price: productInfo.lowest_price,
         store: productInfo.store,
         store_url: productInfo.store_url,
-        image: productInfo.image_url || null,
+        image: imageUrl,
       })
       .select()
       .single();
