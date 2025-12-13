@@ -42,8 +42,12 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. Try to search for at least 5 different urls. ALWAYS make sure that the given URL with minimum price is valid and the product exists and is in stock. Try to search local retailers first. ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
-{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page", "image_url": "https://direct-image-url.jpg"}`,
+            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. Try to search for at least 5 different urls. ALWAYS make sure that the given URL with minimum price is valid and the product exists and is in stock. Try to search local retailers first. 
+
+For the image_url field: You MUST find a REAL image URL from your search results. Look at the actual product pages you find and extract the image URL from there. Do NOT make up or guess image URLs. If you cannot find a real image URL, use null.
+
+ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
+{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page", "image_url": "https://real-image-from-search.jpg"}`,
           },
           {
             role: "user",
@@ -51,13 +55,13 @@ serve(async (req) => {
 
 URL: ${url}
 
-Based on the URL, determine:
+Based on the URL and your search results, determine:
 1. The product name
 2. The brand
 3. The lowest current price you can find
 4. Which store has the lowest price
 5. The direct URL to the product page at the store with the lowest price
-6. A direct image URL for this product (find an official product image from the manufacturer or a major retailer - must be a direct .jpg, .png, or .webp URL)
+6. A REAL image URL that you found in your search results (from Amazon, Best Buy, the manufacturer site, etc.) - do NOT make up URLs
 
 Respond with ONLY the JSON object, no other text.`,
           },
