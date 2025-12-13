@@ -3,7 +3,7 @@ import { Package, X, Loader2, ExternalLink, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const getProductImage = (name: string | null) => {
   const searchTerm = name?.toLowerCase() || 'product';
@@ -62,6 +62,9 @@ const formatTimeRemaining = (ms: number): string => {
 };
 
 const TrackedItems = () => {
+  const location = useLocation();
+  const showNegotiatedDeal = location.state?.fromDemo === true;
+  
   const [items, setItems] = useState<TrackedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState(DEAL_INFO.expiresInMs);
@@ -164,83 +167,85 @@ const TrackedItems = () => {
           
           <div>
             <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
-              Your Negotiated Deal
+              {showNegotiatedDeal ? 'Your Negotiated Deal' : 'Tracked Items'}
             </p>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              {DEAL_INFO.productName}
+              {showNegotiatedDeal ? DEAL_INFO.productName : 'Price Tracker'}
             </h1>
           </div>
         </div>
 
-        {/* Deal Card */}
-        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <div className="glass rounded-xl p-6 border border-green-500/30 shadow-[0_0_30px_hsl(142_76%_45%/0.15)]">
-            <div className="flex items-center gap-4 mb-4">
-              <img
-                src={getProductImage(DEAL_INFO.productName)}
-                alt={DEAL_INFO.productName}
-                className="w-20 h-20 rounded-lg object-cover"
-              />
-              <div className="flex-1">
-                <p className="font-semibold text-foreground">{DEAL_INFO.productName}</p>
-                <p className="text-xs text-muted-foreground">Negotiated bulk discount</p>
+        {/* Deal Card - Only shown if came from demo */}
+        {showNegotiatedDeal && (
+          <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="glass rounded-xl p-6 border border-green-500/30 shadow-[0_0_30px_hsl(142_76%_45%/0.15)]">
+              <div className="flex items-center gap-4 mb-4">
+                <img
+                  src={getProductImage(DEAL_INFO.productName)}
+                  alt={DEAL_INFO.productName}
+                  className="w-20 h-20 rounded-lg object-cover"
+                />
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">{DEAL_INFO.productName}</p>
+                  <p className="text-xs text-muted-foreground">Negotiated bulk discount</p>
+                </div>
               </div>
-            </div>
 
-            {/* Pricing */}
-            <div className="space-y-2 mb-4 pb-4 border-b border-border">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Original price</span>
-                <span className="font-mono text-muted-foreground line-through">${DEAL_INFO.originalPrice.toLocaleString()}</span>
+              {/* Pricing */}
+              <div className="space-y-2 mb-4 pb-4 border-b border-border">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Original price</span>
+                  <span className="font-mono text-muted-foreground line-through">${DEAL_INFO.originalPrice.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Discount</span>
+                  <span className="font-mono font-bold text-green-500">{DEAL_INFO.discountPercent}% OFF</span>
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="font-semibold text-foreground">Your price</span>
+                  <span className="font-mono font-bold text-green-500 text-2xl">${discountedPrice.toLocaleString()}</span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground text-sm">Discount</span>
-                <span className="font-mono font-bold text-green-500">{DEAL_INFO.discountPercent}% OFF</span>
-              </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="font-semibold text-foreground">Your price</span>
-                <span className="font-mono font-bold text-green-500 text-2xl">${discountedPrice.toLocaleString()}</span>
-              </div>
-            </div>
 
-            {/* Timer */}
-            <div className={`flex items-center justify-center gap-2 p-3 rounded-lg mb-4 ${
-              isExpired 
-                ? 'bg-destructive/10 border border-destructive/30' 
-                : 'bg-primary/10 border border-primary/30'
-            }`}>
-              <Clock className={`w-5 h-5 ${isExpired ? 'text-destructive' : 'text-primary animate-pulse'}`} />
-              <div className="text-center">
-                <p className={`font-mono font-bold text-lg ${isExpired ? 'text-destructive' : 'text-primary'}`}>
-                  {formatTimeRemaining(timeRemaining)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isExpired ? 'Deal expired' : 'Time remaining to join'}
-                </p>
+              {/* Timer */}
+              <div className={`flex items-center justify-center gap-2 p-3 rounded-lg mb-4 ${
+                isExpired 
+                  ? 'bg-destructive/10 border border-destructive/30' 
+                  : 'bg-primary/10 border border-primary/30'
+              }`}>
+                <Clock className={`w-5 h-5 ${isExpired ? 'text-destructive' : 'text-primary animate-pulse'}`} />
+                <div className="text-center">
+                  <p className={`font-mono font-bold text-lg ${isExpired ? 'text-destructive' : 'text-primary'}`}>
+                    {formatTimeRemaining(timeRemaining)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isExpired ? 'Deal expired' : 'Time remaining to join'}
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Join Queue Button */}
-            {!isExpired ? (
-              <Link to="/">
-                <Button className="w-full gap-2 gradient-primary text-primary-foreground shadow-glow-primary">
-                  <Users className="w-4 h-4" />
-                  Join Queue for This Deal
-                  <ExternalLink className="w-3 h-3 ml-1" />
+              {/* Join Queue Button */}
+              {!isExpired ? (
+                <Link to="/">
+                  <Button className="w-full gap-2 gradient-primary text-primary-foreground shadow-glow-primary">
+                    <Users className="w-4 h-4" />
+                    Join Queue for This Deal
+                    <ExternalLink className="w-3 h-3 ml-1" />
+                  </Button>
+                </Link>
+              ) : (
+                <Button disabled className="w-full">
+                  Deal Expired
                 </Button>
-              </Link>
-            ) : (
-              <Button disabled className="w-full">
-                Deal Expired
-              </Button>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Other Tracked Items */}
+        {/* Tracked Items */}
         {items.length > 0 && (
-          <div className="space-y-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <p className="text-xs text-muted-foreground uppercase tracking-widest">Other tracked items</p>
+          <div className="space-y-3 animate-slide-up" style={{ animationDelay: showNegotiatedDeal ? '0.2s' : '0.1s' }}>
+            {showNegotiatedDeal && <p className="text-xs text-muted-foreground uppercase tracking-widest">Other tracked items</p>}
             {items.map((item) => (
               <div
                 key={item.id}

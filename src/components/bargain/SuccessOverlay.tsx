@@ -99,7 +99,7 @@ export function SuccessOverlay({ isVisible, product, discount, deals, originalPr
         {/* View Deal Button */}
         {showJoinButton && (
           <div className="animate-fade-in space-y-4">
-            <Link to="/tracked">
+            <Link to="/tracked" state={{ fromDemo: true }}>
               <Button size="lg" className="gap-2 w-full max-w-xs">
                 <Package className="w-4 h-4" />
                 View Your Deal
