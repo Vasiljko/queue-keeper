@@ -40,9 +40,18 @@ const Index = () => {
     fetchItems();
   }, []);
 
-  // Animate counter when selected item changes
+  // Check if already sold out on load
+  const isAlreadySoldOut = selectedItem ? selectedItem.current_count >= selectedItem.total_slots : false;
+
+  // Animate counter when selected item changes (only if not sold out)
   useEffect(() => {
     if (!selectedItem) return;
+    
+    // If already sold out, show full count immediately
+    if (selectedItem.current_count >= selectedItem.total_slots) {
+      setAnimatedCount(selectedItem.current_count);
+      return;
+    }
     
     setAnimatedCount(0);
     const targetCount = selectedItem.current_count;
@@ -169,7 +178,11 @@ const Index = () => {
 
         {/* Buy Button */}
         <div className="animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          {!isSent ? (
+          {isAlreadySoldOut ? (
+            <div className="w-full h-14 flex items-center justify-center gap-2 rounded-xl bg-secondary border border-border">
+              <span className="font-semibold text-muted-foreground">Sorry, Sold Out</span>
+            </div>
+          ) : !isSent ? (
             <Button
               onClick={handleJoinQueue}
               disabled={isMaxCapReached || isLoading}
@@ -189,7 +202,7 @@ const Index = () => {
               ) : (
                 <>
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  {isMaxCapReached ? 'Packages Sent to Users' : 'Reserve & Join Queue'}
+                  Reserve & Join Queue
                 </>
               )}
             </Button>
