@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, ShoppingCart, Loader2, PackageCheck, ExternalLink, Clock } from "lucide-react";
+import { Users, ShoppingCart, Loader2, ExternalLink, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +103,7 @@ const Index = () => {
   };
 
   const isMaxCapReached = selectedItem ? animatedCount >= selectedItem.total_slots : false;
+  const hasJoinedAndFull = isSent && isMaxCapReached;
 
   if (loadingItems) {
     return (
@@ -197,9 +198,25 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Buy Button */}
+        {/* Buy Button / Status */}
         <div className="animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          {isAlreadySoldOut ? (
+          {hasJoinedAndFull ? (
+            <div className="space-y-4 animate-scale-in">
+              <div className="w-full py-6 flex flex-col items-center justify-center gap-3 rounded-xl bg-green-500/10 border border-green-500/30 shadow-[0_0_30px_hsl(142_76%_45%/0.2)]">
+                <div className="relative">
+                  <CheckCircle2 className="w-12 h-12 text-green-500 animate-scale-in" />
+                  <Sparkles className="w-5 h-5 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-lg text-green-500">Queue Complete!</p>
+                  <p className="text-sm text-muted-foreground">Your purchase will be processed shortly</p>
+                </div>
+              </div>
+              <div className="text-center text-xs text-muted-foreground animate-fade-in">
+                <p>All {selectedItem.total_slots} buyers are ready. Bulk order submitted to retailer.</p>
+              </div>
+            </div>
+          ) : isAlreadySoldOut ? (
             <div className="w-full h-14 flex items-center justify-center gap-2 rounded-xl bg-secondary border border-border">
               <span className="font-semibold text-muted-foreground">Sorry, Sold Out</span>
             </div>
