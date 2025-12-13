@@ -14,13 +14,16 @@ interface QueueItem {
   store_url: string | null;
 }
 
+// Demo settings - 10% discount from negotiation
+const DISCOUNT_PERCENT = 10;
+
 const Index = () => {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<QueueItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [loadingItems, setLoadingItems] = useState(true);
-  const [animatedCount, setAnimatedCount] = useState(0);
+  const [animatedCount, setAnimatedCount] = useState(53); // Start at 53 for demo
 
   // Fetch queue items
   useEffect(() => {
@@ -42,20 +45,14 @@ const Index = () => {
     fetchItems();
   }, []);
 
-  // Check if already sold out on load
-  const isAlreadySoldOut = selectedItem ? selectedItem.current_count >= selectedItem.total_slots : false;
+  // For demo: always allow joining (ignore DB sold out state)
+  const isAlreadySoldOut = false;
 
-  // Initialize counter at 53 and simulate random growth
+  // Initialize counter at 53 and simulate random growth (for demo purposes, always run)
   useEffect(() => {
     if (!selectedItem) return;
     
-    // If already sold out, show full count immediately
-    if (selectedItem.current_count >= selectedItem.total_slots) {
-      setAnimatedCount(selectedItem.current_count);
-      return;
-    }
-    
-    // Start at 53
+    // Start at 53 for demo
     setAnimatedCount(53);
     let currentCount = 53;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -169,9 +166,19 @@ const Index = () => {
               {selectedItem.name}
             </h2>
             {selectedItem.price && (
-              <p className="text-2xl font-bold text-primary mb-2">
-                ${selectedItem.price.toLocaleString()}
-              </p>
+              <div className="mb-2">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-lg text-muted-foreground line-through">
+                    ${selectedItem.price.toLocaleString()}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-xs font-bold">
+                    {DISCOUNT_PERCENT}% OFF
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-green-500">
+                  ${Math.round(selectedItem.price * (1 - DISCOUNT_PERCENT / 100)).toLocaleString()}
+                </p>
+              </div>
             )}
             {selectedItem.store_url && (
               <a 
