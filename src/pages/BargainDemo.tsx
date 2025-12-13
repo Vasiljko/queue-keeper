@@ -203,6 +203,7 @@ const BargainDemo = () => {
         product="MacBook Pro M4 14 inch"
         discount={bestDiscount}
         deals={successfulDeals}
+        originalPrice={1999}
         onRestart={handleRestartFromOverlay}
       />
     </div>
