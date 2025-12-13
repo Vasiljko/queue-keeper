@@ -53,18 +53,9 @@ URL: ${url}
 Based on the URL, determine:
 1. The product name
 2. The brand
-3. A placeholder image URL (use a relevant unsplash image)
-4. The lowest current price you can find
-5. Which store has the lowest price
-
-Return ONLY a valid JSON object in this exact format, no other text:
-{
-  "name": "Product Name",
-  "brand": "Brand Name", 
-  "image": "https://images.unsplash.com/photo-xxx?w=200&h=200&fit=crop",
-  "lowest_price": 99.99,
-  "store": "Store Name"
-}`
+3. The lowest current price you can find
+4. Which store has the lowest price
+5. The direct URL to the product page at the store with the lowest price`
           }
         ],
         tools: [
@@ -72,17 +63,17 @@ Return ONLY a valid JSON object in this exact format, no other text:
             type: "function",
             function: {
               name: "extract_product_info",
-              description: "Extract product information and best price",
+              description: "Extract product information and best price with store URL",
               parameters: {
                 type: "object",
                 properties: {
                   name: { type: "string", description: "Product name" },
                   brand: { type: "string", description: "Brand name" },
-                  image: { type: "string", description: "Product image URL (use unsplash)" },
                   lowest_price: { type: "number", description: "Lowest price found" },
-                  store: { type: "string", description: "Store with lowest price" }
+                  store: { type: "string", description: "Store name with lowest price" },
+                  store_url: { type: "string", description: "Direct URL to buy the product at the lowest price store" }
                 },
-                required: ["name", "brand", "image", "lowest_price", "store"],
+                required: ["name", "brand", "lowest_price", "store", "store_url"],
                 additionalProperties: false
               }
             }
@@ -121,9 +112,9 @@ Return ONLY a valid JSON object in this exact format, no other text:
         url,
         name: productInfo.name,
         brand: productInfo.brand,
-        image: productInfo.image,
         lowest_price: productInfo.lowest_price,
         store: productInfo.store,
+        store_url: productInfo.store_url,
       })
       .select()
       .single();
