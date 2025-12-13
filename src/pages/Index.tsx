@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Users, ShoppingCart, Loader2, ExternalLink, Clock, CheckCircle2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface QueueItem {
@@ -49,9 +48,9 @@ const Index = () => {
   // For demo: always allow joining (ignore DB sold out state)
   const isAlreadySoldOut = false;
 
-  // Initialize counter at 53 and simulate random growth (for demo purposes, always run)
+  // Initialize counter at 53 and simulate random growth (keeps running even after join)
   useEffect(() => {
-    if (!selectedItem || isSent) return; // Don't run simulation if user has joined
+    if (!selectedItem) return;
     
     // Start at 53 for demo
     setAnimatedCount(53);
@@ -72,25 +71,16 @@ const Index = () => {
     scheduleNextIncrement();
 
     return () => clearTimeout(timeoutId);
-  }, [selectedItem, isSent]);
+  }, [selectedItem]);
 
-  const handleJoinQueue = async () => {
+  const handleJoinQueue = () => {
     if (!selectedItem) return;
     
     setIsLoading(true);
-    
-    // Increment from current animated count (not DB value)
-    const newCount = animatedCount + 1;
 
     setTimeout(() => {
       setIsLoading(false);
       setIsSent(true);
-      setAnimatedCount(newCount);
-      
-      toast({
-        title: "You're in the queue!",
-        description: `Position ${newCount} of ${selectedItem.total_slots}. We'll notify you when it's your turn.`,
-      });
     }, 1000);
   };
 
