@@ -94,7 +94,37 @@ Respond with ONLY the JSON object, no other text.`,
     }
     console.log("Extracted product info:", productInfo);
 
-    // Step 2: Save to database
+    // Step 2: Try to get a product image from DuckDuckGo
+    let imageUrl = productInfo.image_url;
+    if (!imageUrl) {
+      try {
+        const searchQuery = `${productInfo.brand} ${productInfo.name}`;
+        console.log("Searching DuckDuckGo for image:", searchQuery);
+        
+        const ddgResponse = await fetch(
+          `https://api.duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&format=json&no_html=1&skip_disambig=1`
+        );
+        
+        if (ddgResponse.ok) {
+          const ddgData = await ddgResponse.json();
+          console.log("DuckDuckGo response:", JSON.stringify(ddgData, null, 2));
+          
+          // Try to get image from various DuckDuckGo response fields
+          imageUrl = ddgData.Image || ddgData.RelatedTopics?.[0]?.Icon?.URL || null;
+          
+          // DuckDuckGo sometimes returns relative URLs
+          if (imageUrl && !imageUrl.startsWith('http')) {
+            imageUrl = `https://duckduckgo.com${imageUrl}`;
+          }
+          
+          console.log("DuckDuckGo image URL:", imageUrl);
+        }
+      } catch (ddgError) {
+        console.error("DuckDuckGo image search failed:", ddgError);
+      }
+    }
+
+    // Step 3: Save to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -108,7 +138,7 @@ Respond with ONLY the JSON object, no other text.`,
         lowest_price: productInfo.lowest_price,
         store: productInfo.store,
         store_url: productInfo.store_url,
-        image: productInfo.image_url || null,
+        image: imageUrl || null,
       })
       .select()
       .single();
