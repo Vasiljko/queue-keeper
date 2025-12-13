@@ -45,7 +45,7 @@ const Index = () => {
   // Check if already sold out on load
   const isAlreadySoldOut = selectedItem ? selectedItem.current_count >= selectedItem.total_slots : false;
 
-  // Animate counter when selected item changes (only if not sold out)
+  // Initialize counter at 53 and simulate random growth
   useEffect(() => {
     if (!selectedItem) return;
     
@@ -55,24 +55,25 @@ const Index = () => {
       return;
     }
     
-    setAnimatedCount(0);
-    const targetCount = selectedItem.current_count;
-    const duration = 1200;
-    const steps = 40;
-    const increment = targetCount / steps;
-    let current = 0;
+    // Start at 53
+    setAnimatedCount(53);
+    let currentCount = 53;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= targetCount) {
-        setAnimatedCount(targetCount);
-        clearInterval(timer);
-      } else {
-        setAnimatedCount(Math.floor(current));
-      }
-    }, duration / steps);
+    const scheduleNextIncrement = () => {
+      const randomDelay = Math.random() * 1500 + 500; // 0.5 to 2 seconds
+      timeoutId = setTimeout(() => {
+        if (currentCount < selectedItem.total_slots) {
+          currentCount++;
+          setAnimatedCount(currentCount);
+          scheduleNextIncrement();
+        }
+      }, randomDelay);
+    };
 
-    return () => clearInterval(timer);
+    scheduleNextIncrement();
+
+    return () => clearTimeout(timeoutId);
   }, [selectedItem]);
 
   const handleJoinQueue = async () => {
