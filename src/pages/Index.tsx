@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Users, ShoppingCart, CheckCircle2 } from "lucide-react";
+import { Users, ShoppingCart, CheckCircle2, Loader2, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [queueCount, setQueueCount] = useState(0);
   const [isInQueue, setIsInQueue] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const targetCount = 59;
   const maxCap = 60;
 
@@ -30,12 +31,16 @@ const Index = () => {
   }, []);
 
   const handleJoinQueue = () => {
-    setIsInQueue(true);
-    setQueueCount(maxCap);
-    toast({
-      title: "You're in the queue!",
-      description: "Your funds have been reserved. We'll notify you when it's your turn.",
-    });
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setIsInQueue(true);
+      setQueueCount(maxCap);
+      toast({
+        title: "Packages Sent!",
+        description: "Your order has been processed and packages are on their way.",
+      });
+    }, 1000);
   };
 
   const isMaxCapReached = queueCount >= maxCap;
@@ -71,20 +76,31 @@ const Index = () => {
           {!isInQueue ? (
             <Button
               onClick={handleJoinQueue}
-              disabled={isMaxCapReached}
-              className={`w-full h-14 text-lg font-semibold rounded-xl transition-opacity ${
+              disabled={isMaxCapReached || isLoading}
+              className={`w-full h-14 text-lg font-semibold rounded-xl transition-all ${
                 isMaxCapReached
                   ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                  : isLoading
+                  ? 'gradient-primary text-primary-foreground opacity-80'
                   : 'gradient-primary text-primary-foreground shadow-glow-primary hover:opacity-90'
               }`}
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
-              {isMaxCapReached ? 'Packages Sent to Users' : 'Reserve & Join Queue'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  {isMaxCapReached ? 'Packages Sent to Users' : 'Reserve & Join Queue'}
+                </>
+              )}
             </Button>
           ) : (
             <div className="w-full h-14 flex items-center justify-center gap-2 rounded-xl glass border border-primary/30">
-              <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-foreground">Packages Sent to Users</span>
+              <PackageCheck className="w-5 h-5 text-primary" />
+              <span className="font-semibold text-foreground">Packages Sent!</span>
             </div>
           )}
         </div>
