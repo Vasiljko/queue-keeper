@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, Shield, ChevronRight, Plus, Minus } from "lucide-react";
+import { Wallet, Shield, ChevronRight, Plus, Minus, Loader2, PackageCheck } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface FundingSectionProps {
@@ -12,6 +12,19 @@ interface FundingSectionProps {
 
 const FundingSection = ({ requiredAmount, currentBalance, onAddFunds, isSecured, isMaxCapReached = false }: FundingSectionProps) => {
   const [selectedAmount, setSelectedAmount] = useState(requiredAmount);
+  const [isLoading, setIsLoading] = useState(false);
+  const [packagesSent, setPackagesSent] = useState(false);
+
+  const handleSecureClick = () => {
+    if (isMaxCapReached) return;
+    
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setPackagesSent(true);
+      onAddFunds(selectedAmount);
+    }, 1000);
+  };
   const presetAmounts = [25, 50, 100, 250];
   const needsMore = currentBalance < requiredAmount;
   const shortfall = requiredAmount - currentBalance;
@@ -90,16 +103,32 @@ const FundingSection = ({ requiredAmount, currentBalance, onAddFunds, isSecured,
           </div>
 
           <Button
-            onClick={() => onAddFunds(selectedAmount)}
-            disabled={isMaxCapReached}
-            className={`w-full h-12 font-semibold rounded-xl transition-opacity group ${
-              isMaxCapReached
+            onClick={handleSecureClick}
+            disabled={isMaxCapReached || isLoading || packagesSent}
+            className={`w-full h-12 font-semibold rounded-xl transition-all group ${
+              isMaxCapReached || packagesSent
                 ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                : isLoading
+                ? 'gradient-primary text-primary-foreground opacity-80'
                 : 'gradient-primary text-primary-foreground shadow-glow-primary hover:opacity-90'
             }`}
           >
-            <span>{isMaxCapReached ? 'Packages Sent to User' : `Add $${selectedAmount} to Secure`}</span>
-            {!isMaxCapReached && <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : packagesSent ? (
+              <>
+                <PackageCheck className="w-5 h-5 mr-2" />
+                <span>Packages Sent!</span>
+              </>
+            ) : (
+              <>
+                <span>{`Add $${selectedAmount} to Secure`}</span>
+                <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </>
+            )}
           </Button>
         </>
       )}
