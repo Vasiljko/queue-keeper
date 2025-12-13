@@ -41,6 +41,7 @@ interface TrackedItem {
   lowest_price: number | null;
   store: string | null;
   url: string;
+  store_url: string | null;
 }
 
 const TrackedItems = () => {
@@ -163,7 +164,7 @@ const TrackedItems = () => {
                 
                 <div className="flex-1 min-w-0">
                   <a 
-                    href={item.url} 
+                    href={item.store_url || item.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="font-semibold text-foreground text-sm truncate block hover:text-primary transition-colors group"

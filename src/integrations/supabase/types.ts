@@ -23,6 +23,7 @@ export type Database = {
           lowest_price: number | null
           name: string | null
           store: string | null
+          store_url: string | null
           updated_at: string
           url: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           lowest_price?: number | null
           name?: string | null
           store?: string | null
+          store_url?: string | null
           updated_at?: string
           url: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           lowest_price?: number | null
           name?: string | null
           store?: string | null
+          store_url?: string | null
           updated_at?: string
           url?: string
         }
