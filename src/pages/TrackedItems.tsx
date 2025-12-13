@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Package, X, Loader2, ExternalLink } from "lucide-react";
+import { Package, X, Loader2, ExternalLink, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 const getProductImage = (name: string | null) => {
   const searchTerm = name?.toLowerCase() || 'product';
@@ -44,9 +45,28 @@ interface TrackedItem {
   store_url: string | null;
 }
 
+// Deal info from the demo negotiation
+const DEAL_INFO = {
+  productName: "MacBook Pro M4 14''",
+  originalPrice: 1999,
+  discountPercent: 10,
+  expiresInMs: 60 * 60 * 1000, // 1 hour
+};
+
+const formatTimeRemaining = (ms: number): string => {
+  if (ms <= 0) return "00:00:00";
+  const hours = Math.floor(ms / (1000 * 60 * 60));
+  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
 const TrackedItems = () => {
   const [items, setItems] = useState<TrackedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeRemaining, setTimeRemaining] = useState(DEAL_INFO.expiresInMs);
+
+  const discountedPrice = Math.round(DEAL_INFO.originalPrice * (1 - DEAL_INFO.discountPercent / 100));
 
   const fetchItems = async () => {
     const { data, error } = await supabase
@@ -87,6 +107,21 @@ const TrackedItems = () => {
     };
   }, []);
 
+  // Countdown timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1000) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleUntrack = async (id: string, name: string | null) => {
     const { error } = await supabase
       .from('tracked_items')
@@ -116,6 +151,8 @@ const TrackedItems = () => {
     );
   }
 
+  const isExpired = timeRemaining <= 0;
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md space-y-8">
@@ -127,28 +164,84 @@ const TrackedItems = () => {
           
           <div>
             <p className="text-sm text-muted-foreground uppercase tracking-widest mb-2">
-              Currently Tracking
+              Your Negotiated Deal
             </p>
-            <h1 className="text-7xl font-bold font-mono text-foreground tracking-tight">
-              {items.length}
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              {DEAL_INFO.productName}
             </h1>
-            <p className="text-muted-foreground mt-2">
-              items in your watchlist
-            </p>
           </div>
         </div>
 
-        {/* Items List */}
-        <div className="space-y-3 animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          {items.length === 0 ? (
-            <div className="text-center py-12 glass rounded-xl border border-border/50">
-              <p className="text-muted-foreground">No items being tracked</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Send a POST request to /functions/v1/track-product with a product URL
-              </p>
+        {/* Deal Card */}
+        <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <div className="glass rounded-xl p-6 border border-green-500/30 shadow-[0_0_30px_hsl(142_76%_45%/0.15)]">
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={getProductImage(DEAL_INFO.productName)}
+                alt={DEAL_INFO.productName}
+                className="w-20 h-20 rounded-lg object-cover"
+              />
+              <div className="flex-1">
+                <p className="font-semibold text-foreground">{DEAL_INFO.productName}</p>
+                <p className="text-xs text-muted-foreground">Negotiated bulk discount</p>
+              </div>
             </div>
-          ) : (
-            items.map((item) => (
+
+            {/* Pricing */}
+            <div className="space-y-2 mb-4 pb-4 border-b border-border">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground text-sm">Original price</span>
+                <span className="font-mono text-muted-foreground line-through">${DEAL_INFO.originalPrice.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground text-sm">Discount</span>
+                <span className="font-mono font-bold text-green-500">{DEAL_INFO.discountPercent}% OFF</span>
+              </div>
+              <div className="flex justify-between items-center pt-2">
+                <span className="font-semibold text-foreground">Your price</span>
+                <span className="font-mono font-bold text-green-500 text-2xl">${discountedPrice.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Timer */}
+            <div className={`flex items-center justify-center gap-2 p-3 rounded-lg mb-4 ${
+              isExpired 
+                ? 'bg-destructive/10 border border-destructive/30' 
+                : 'bg-primary/10 border border-primary/30'
+            }`}>
+              <Clock className={`w-5 h-5 ${isExpired ? 'text-destructive' : 'text-primary animate-pulse'}`} />
+              <div className="text-center">
+                <p className={`font-mono font-bold text-lg ${isExpired ? 'text-destructive' : 'text-primary'}`}>
+                  {formatTimeRemaining(timeRemaining)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isExpired ? 'Deal expired' : 'Time remaining to join'}
+                </p>
+              </div>
+            </div>
+
+            {/* Join Queue Button */}
+            {!isExpired ? (
+              <Link to="/">
+                <Button className="w-full gap-2 gradient-primary text-primary-foreground shadow-glow-primary">
+                  <Users className="w-4 h-4" />
+                  Join Queue for This Deal
+                  <ExternalLink className="w-3 h-3 ml-1" />
+                </Button>
+              </Link>
+            ) : (
+              <Button disabled className="w-full">
+                Deal Expired
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Other Tracked Items */}
+        {items.length > 0 && (
+          <div className="space-y-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">Other tracked items</p>
+            {items.map((item) => (
               <div
                 key={item.id}
                 className="glass rounded-xl p-4 border border-border/50 flex items-center gap-4"
@@ -195,12 +288,12 @@ const TrackedItems = () => {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Info text */}
-        <p className="text-center text-xs text-muted-foreground animate-slide-up" style={{ animationDelay: '0.25s' }}>
+        <p className="text-center text-xs text-muted-foreground animate-slide-up" style={{ animationDelay: '0.3s' }}>
           Prices update automatically every hour
         </p>
       </div>
