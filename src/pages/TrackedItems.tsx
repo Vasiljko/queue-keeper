@@ -16,8 +16,11 @@ const getProductImage = (name: string | null) => {
   if (searchTerm.includes('phone') || searchTerm.includes('iphone') || searchTerm.includes('samsung')) {
     return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop';
   }
-  if (searchTerm.includes('shoe') || searchTerm.includes('sneaker') || searchTerm.includes('nike') || searchTerm.includes('adidas')) {
+  if (searchTerm.includes('shoe') || searchTerm.includes('sneaker') || searchTerm.includes('nike') || searchTerm.includes('adidas') || searchTerm.includes('air force')) {
     return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('racket') || searchTerm.includes('racquet') || searchTerm.includes('tennis') || searchTerm.includes('babolat')) {
+    return 'https://images.unsplash.com/photo-1617083934555-ac7d4ac4f3d4?w=200&h=200&fit=crop';
   }
   if (searchTerm.includes('watch') || searchTerm.includes('apple watch')) {
     return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
@@ -31,7 +34,8 @@ const getProductImage = (name: string | null) => {
   if (searchTerm.includes('keyboard') || searchTerm.includes('mouse')) {
     return 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop';
   }
-  return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
+  // Default to a generic product box instead of watch
+  return 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=200&h=200&fit=crop';
 };
 
 interface TrackedItem {
