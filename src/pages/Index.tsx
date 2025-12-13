@@ -6,7 +6,8 @@ import { toast } from "@/hooks/use-toast";
 const Index = () => {
   const [queueCount, setQueueCount] = useState(0);
   const [isInQueue, setIsInQueue] = useState(false);
-  const targetCount = 1247;
+  const targetCount = 59;
+  const maxCap = 60;
 
   // Animate counter on load
   useEffect(() => {
@@ -30,12 +31,14 @@ const Index = () => {
 
   const handleJoinQueue = () => {
     setIsInQueue(true);
-    setQueueCount((prev) => prev + 1);
+    setQueueCount(maxCap);
     toast({
       title: "You're in the queue!",
       description: "Your funds have been reserved. We'll notify you when it's your turn.",
     });
   };
+
+  const isMaxCapReached = queueCount >= maxCap;
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
@@ -53,8 +56,11 @@ const Index = () => {
             <h1 className="text-7xl font-bold font-mono text-foreground tracking-tight">
               {queueCount.toLocaleString()}
             </h1>
+            <p className="text-2xl font-semibold text-muted-foreground mt-2">
+              out of {maxCap}
+            </p>
           </div>
-          
+
           <p className="text-muted-foreground">
             waiting to purchase this item
           </p>
@@ -65,15 +71,20 @@ const Index = () => {
           {!isInQueue ? (
             <Button
               onClick={handleJoinQueue}
-              className="w-full h-14 text-lg font-semibold gradient-primary text-primary-foreground rounded-xl shadow-glow-primary hover:opacity-90 transition-opacity"
+              disabled={isMaxCapReached}
+              className={`w-full h-14 text-lg font-semibold rounded-xl transition-opacity ${
+                isMaxCapReached
+                  ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                  : 'gradient-primary text-primary-foreground shadow-glow-primary hover:opacity-90'
+              }`}
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
-              Reserve & Join Queue
+              {isMaxCapReached ? 'Packages Sent to Users' : 'Reserve & Join Queue'}
             </Button>
           ) : (
             <div className="w-full h-14 flex items-center justify-center gap-2 rounded-xl glass border border-primary/30">
               <CheckCircle2 className="w-5 h-5 text-primary" />
-              <span className="font-semibold text-foreground">You're in the queue!</span>
+              <span className="font-semibold text-foreground">Packages Sent to Users</span>
             </div>
           )}
         </div>

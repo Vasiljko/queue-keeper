@@ -10,16 +10,21 @@ const QueueTracker = () => {
   const [balance, setBalance] = useState(35);
   const [isSecured, setIsSecured] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentQueueCount, setCurrentQueueCount] = useState(0);
 
   const requiredAmount = 50;
-  const queueCount = 1247;
+  const queueCount = 59;
+  const maxCap = 60;
   const userPosition = 342;
+  const isMaxCapReached = currentQueueCount >= maxCap;
 
   const handleAddFunds = (amount: number) => {
     setBalance((prev) => {
       const newBalance = prev + amount;
-      if (newBalance >= requiredAmount) {
+      if (newBalance >= requiredAmount && !isMaxCapReached) {
         setIsSecured(true);
+        // Increment counter to trigger max cap
+        setCurrentQueueCount(maxCap);
         toast({
           title: "Spot Secured! 🎉",
           description: "Your position in the queue is now locked.",
@@ -27,6 +32,10 @@ const QueueTracker = () => {
       }
       return newBalance;
     });
+  };
+
+  const handleCountChange = (count: number) => {
+    setCurrentQueueCount(count);
   };
 
   const handleRefresh = () => {
@@ -61,7 +70,7 @@ const QueueTracker = () => {
 
       {/* Queue Counter */}
       <div className="mb-4">
-        <QueueCounter count={queueCount} />
+        <QueueCounter count={queueCount} onCountChange={handleCountChange} />
       </div>
 
       {/* Product Card */}
@@ -93,6 +102,7 @@ const QueueTracker = () => {
         currentBalance={balance}
         onAddFunds={handleAddFunds}
         isSecured={isSecured}
+        isMaxCapReached={isMaxCapReached}
       />
 
       {/* Footer */}

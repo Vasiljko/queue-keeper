@@ -4,29 +4,34 @@ import { Users } from "lucide-react";
 interface QueueCounterProps {
   count: number;
   maxVisible?: number;
+  maxCap?: number;
+  onCountChange?: (count: number) => void;
 }
 
-const QueueCounter = ({ count, maxVisible = 999 }: QueueCounterProps) => {
+const QueueCounter = ({ count, maxVisible = 999, maxCap, onCountChange }: QueueCounterProps) => {
   const [displayCount, setDisplayCount] = useState(0);
-  
+
   useEffect(() => {
     const duration = 1000;
     const steps = 30;
     const increment = count / steps;
     let current = 0;
-    
+
     const timer = setInterval(() => {
       current += increment;
       if (current >= count) {
         setDisplayCount(count);
+        onCountChange?.(count);
         clearInterval(timer);
       } else {
-        setDisplayCount(Math.floor(current));
+        const newCount = Math.floor(current);
+        setDisplayCount(newCount);
+        onCountChange?.(newCount);
       }
     }, duration / steps);
-    
+
     return () => clearInterval(timer);
-  }, [count]);
+  }, [count, onCountChange]);
 
   const displayValue = displayCount > maxVisible ? `${maxVisible}+` : displayCount.toLocaleString();
 
@@ -40,9 +45,16 @@ const QueueCounter = ({ count, maxVisible = 999 }: QueueCounterProps) => {
       </div>
       <div className="flex flex-col">
         <span className="text-xs text-muted-foreground uppercase tracking-wider">In Queue</span>
-        <span className="text-2xl font-bold font-mono text-foreground animate-count-up">
-          {displayValue}
-        </span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold font-mono text-foreground animate-count-up">
+            {displayValue}
+          </span>
+          {maxCap && (
+            <span className="text-sm font-semibold text-muted-foreground">
+              / {maxCap}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -7,9 +7,10 @@ interface FundingSectionProps {
   currentBalance: number;
   onAddFunds: (amount: number) => void;
   isSecured: boolean;
+  isMaxCapReached?: boolean;
 }
 
-const FundingSection = ({ requiredAmount, currentBalance, onAddFunds, isSecured }: FundingSectionProps) => {
+const FundingSection = ({ requiredAmount, currentBalance, onAddFunds, isSecured, isMaxCapReached = false }: FundingSectionProps) => {
   const [selectedAmount, setSelectedAmount] = useState(requiredAmount);
   const presetAmounts = [25, 50, 100, 250];
   const needsMore = currentBalance < requiredAmount;
@@ -88,12 +89,17 @@ const FundingSection = ({ requiredAmount, currentBalance, onAddFunds, isSecured 
             </button>
           </div>
 
-          <Button 
+          <Button
             onClick={() => onAddFunds(selectedAmount)}
-            className="w-full h-12 gradient-primary text-primary-foreground font-semibold rounded-xl shadow-glow-primary hover:opacity-90 transition-opacity group"
+            disabled={isMaxCapReached}
+            className={`w-full h-12 font-semibold rounded-xl transition-opacity group ${
+              isMaxCapReached
+                ? 'bg-secondary text-muted-foreground cursor-not-allowed'
+                : 'gradient-primary text-primary-foreground shadow-glow-primary hover:opacity-90'
+            }`}
           >
-            <span>Add ${selectedAmount} to Secure</span>
-            <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            <span>{isMaxCapReached ? 'Packages Sent to User' : `Add $${selectedAmount} to Secure`}</span>
+            {!isMaxCapReached && <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
           </Button>
         </>
       )}
