@@ -5,8 +5,34 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useLocation } from "react-router-dom";
 
-// Generic placeholder when no image is available from Perplexity
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?w=200&h=200&fit=crop';
+const getProductImage = (name: string | null) => {
+  const searchTerm = name?.toLowerCase() || 'product';
+  if (searchTerm.includes('headphone') || searchTerm.includes('audio')) {
+    return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('laptop') || searchTerm.includes('macbook') || searchTerm.includes('computer')) {
+    return 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('phone') || searchTerm.includes('iphone') || searchTerm.includes('samsung')) {
+    return 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('shoe') || searchTerm.includes('sneaker') || searchTerm.includes('nike') || searchTerm.includes('adidas')) {
+    return 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('watch') || searchTerm.includes('apple watch')) {
+    return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('camera') || searchTerm.includes('canon') || searchTerm.includes('sony')) {
+    return 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('tv') || searchTerm.includes('television') || searchTerm.includes('monitor')) {
+    return 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=200&h=200&fit=crop';
+  }
+  if (searchTerm.includes('keyboard') || searchTerm.includes('mouse')) {
+    return 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop';
+  }
+  return 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop';
+};
 
 interface TrackedItem {
   id: string;
@@ -155,7 +181,7 @@ const TrackedItems = () => {
             <div className="glass rounded-xl p-6 border border-green-500/30 shadow-[0_0_30px_hsl(142_76%_45%/0.15)]">
               <div className="flex items-center gap-4 mb-4">
                 <img
-                  src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=200&h=200&fit=crop"
+                  src={getProductImage(DEAL_INFO.productName)}
                   alt={DEAL_INFO.productName}
                   className="w-20 h-20 rounded-lg object-cover"
                 />
@@ -226,11 +252,11 @@ const TrackedItems = () => {
                 className="glass rounded-xl p-4 border border-border/50 flex items-center gap-4"
               >
                 <img
-                  src={item.image || PLACEHOLDER_IMAGE}
+                  src={item.image || getProductImage(item.name)}
                   alt={item.name || 'Product'}
                   className="w-16 h-16 rounded-lg object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = PLACEHOLDER_IMAGE;
+                    e.currentTarget.src = getProductImage(item.name);
                   }}
                 />
                 

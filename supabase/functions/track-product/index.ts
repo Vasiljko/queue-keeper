@@ -42,12 +42,8 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. Try to search for at least 5 different urls. ALWAYS make sure that the given URL with minimum price is valid and the product exists and is in stock. Try to search local retailers first. 
-
-For the image_url field: You MUST find a REAL image URL from your search results. Look at the actual product pages you find and extract the image URL from there. Do NOT make up or guess image URLs. If you cannot find a real image URL, use null.
-
-ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
-{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page", "image_url": "https://real-image-from-search.jpg"}`,
+            content: `You are a product research assistant. Given a product URL, analyze what product it is and search for the best current prices across major retailers. Return a JSON object with the product details and best price found. Try to search for at least 5 different urls. ALWAYS make sure that the given URL with minimum price is valid and the product exists and is in stock. Try to search local retailers first. ALWAYS respond with ONLY a valid JSON object in this exact format, no other text:
+{"name": "Product Name", "brand": "Brand Name", "lowest_price": 99.99, "store": "Store Name", "store_url": "https://store.com/product-page"}`,
           },
           {
             role: "user",
@@ -55,13 +51,12 @@ ALWAYS respond with ONLY a valid JSON object in this exact format, no other text
 
 URL: ${url}
 
-Based on the URL and your search results, determine:
+Based on the URL, determine:
 1. The product name
 2. The brand
 3. The lowest current price you can find
 4. Which store has the lowest price
 5. The direct URL to the product page at the store with the lowest price
-6. A REAL image URL that you found in your search results (from Amazon, Best Buy, the manufacturer site, etc.) - do NOT make up URLs
 
 Respond with ONLY the JSON object, no other text.`,
           },
@@ -94,37 +89,7 @@ Respond with ONLY the JSON object, no other text.`,
     }
     console.log("Extracted product info:", productInfo);
 
-    // Step 2: Try to get a product image from DuckDuckGo
-    let imageUrl = productInfo.image_url;
-    if (!imageUrl) {
-      try {
-        const searchQuery = `${productInfo.brand} ${productInfo.name}`;
-        console.log("Searching DuckDuckGo for image:", searchQuery);
-        
-        const ddgResponse = await fetch(
-          `https://api.duckduckgo.com/?q=${encodeURIComponent(searchQuery)}&format=json&no_html=1&skip_disambig=1`
-        );
-        
-        if (ddgResponse.ok) {
-          const ddgData = await ddgResponse.json();
-          console.log("DuckDuckGo response:", JSON.stringify(ddgData, null, 2));
-          
-          // Try to get image from various DuckDuckGo response fields
-          imageUrl = ddgData.Image || ddgData.RelatedTopics?.[0]?.Icon?.URL || null;
-          
-          // DuckDuckGo sometimes returns relative URLs
-          if (imageUrl && !imageUrl.startsWith('http')) {
-            imageUrl = `https://duckduckgo.com${imageUrl}`;
-          }
-          
-          console.log("DuckDuckGo image URL:", imageUrl);
-        }
-      } catch (ddgError) {
-        console.error("DuckDuckGo image search failed:", ddgError);
-      }
-    }
-
-    // Step 3: Save to database
+    // Step 2: Save to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -138,7 +103,6 @@ Respond with ONLY the JSON object, no other text.`,
         lowest_price: productInfo.lowest_price,
         store: productInfo.store,
         store_url: productInfo.store_url,
-        image: imageUrl || null,
       })
       .select()
       .single();
