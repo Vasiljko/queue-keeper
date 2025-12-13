@@ -96,18 +96,18 @@ export function SuccessOverlay({ isVisible, product, discount, deals, originalPr
           </div>
         </div>
 
-        {/* Join Queue Button */}
+        {/* View Deal Button */}
         {showJoinButton && (
           <div className="animate-fade-in space-y-4">
-            <Link to="/">
+            <Link to="/tracked">
               <Button size="lg" className="gap-2 w-full max-w-xs">
-                <Users className="w-4 h-4" />
-                Join Queue for This Deal
+                <Package className="w-4 h-4" />
+                View Your Deal
                 <ExternalLink className="w-3 h-3 ml-1" />
               </Button>
             </Link>
             <p className="text-xs text-muted-foreground">
-              Reserve your spot and get this discounted price
+              Your discounted price is locked for 1 hour
             </p>
           </div>
         )}
