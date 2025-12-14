@@ -107,36 +107,28 @@ const BargainDemo = () => {
     <div className="h-screen overflow-hidden bg-background flex flex-col">
       <BargainHeader />
 
-      {/* Stats Bar */}
-      <div className="border-b border-border bg-card/50 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-6 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <span className="font-mono text-sm">
-                <span className="text-muted-foreground">BUYERS:</span>{" "}
-                <span className="text-foreground font-semibold">47</span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Percent className="w-4 h-4 text-green-500" />
-              <span className="font-mono text-sm">
-                <span className="text-muted-foreground">TARGET:</span>{" "}
-                <span className="text-green-500 font-semibold">5-10%</span>
-              </span>
-            </div>
-            {showDealsSummary && successfulDeals.length > 0 && (
-              <div className="font-mono text-sm animate-fade-in">
-                <span className="text-muted-foreground">DEALS LOCKED:</span>{" "}
-                <span className="text-green-500 font-semibold">{successfulDeals.length}</span>
-                <span className="text-muted-foreground ml-2">BEST:</span>{" "}
-                <span className="text-green-500 font-semibold">{bestDiscount}% OFF</span>
+      {/* Stats Bar - hidden when running */}
+      {!isRunning && (
+        <div className="border-b border-border bg-card/50 flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" />
+                <span className="font-mono text-sm">
+                  <span className="text-muted-foreground">BUYERS:</span>{" "}
+                  <span className="text-foreground font-semibold">47</span>
+                </span>
               </div>
-            )}
-          </div>
+              <div className="flex items-center gap-2">
+                <Percent className="w-4 h-4 text-green-500" />
+                <span className="font-mono text-sm">
+                  <span className="text-muted-foreground">TARGET:</span>{" "}
+                  <span className="text-green-500 font-semibold">5-10%</span>
+                </span>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-4">
-            {!isRunning && (
+            <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <Gauge className="w-4 h-4 text-muted-foreground" />
                 <div className="flex items-center gap-2">
@@ -151,22 +143,15 @@ const BargainDemo = () => {
                   />
                 </div>
               </div>
-            )}
 
-            {!isRunning ? (
               <Button onClick={startDemo} className="gap-2">
                 <Play className="w-4 h-4" />
                 Launch Agents
               </Button>
-            ) : (
-              <Button onClick={resetDemo} variant="outline" className="gap-2">
-                <RotateCcw className="w-4 h-4" />
-                Reset Demo
-              </Button>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Agent Grid */}
       <main className="flex-1 p-4 overflow-hidden">
