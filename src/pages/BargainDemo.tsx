@@ -108,15 +108,6 @@ const BargainDemo = () => {
       className="h-screen overflow-hidden bg-background flex flex-col cursor-pointer"
       onClick={handleScreenClick}
     >
-      {/* Click to start overlay */}
-      {!isRunning && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <div className="text-center animate-pulse">
-            <p className="text-2xl font-semibold text-foreground">Click anywhere to start</p>
-            <p className="text-muted-foreground mt-2">Watch AI agents negotiate discounts</p>
-          </div>
-        </div>
-      )}
 
       {/* Agent Grid */}
       <main className="flex-1 p-4 overflow-hidden">
