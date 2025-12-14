@@ -1,11 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
-import { BargainHeader } from "@/components/bargain/BargainHeader";
 import { AgentPanel } from "@/components/bargain/AgentPanel";
 import { SuccessOverlay } from "@/components/bargain/SuccessOverlay";
 import { negotiations } from "@/data/negotiations";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Play, RotateCcw, Users, Percent, Gauge } from "lucide-react";
 
 interface DealResult {
   retailerName: string;
@@ -101,54 +97,23 @@ const BargainDemo = () => {
   const successfulNegotiations = negotiations.filter(n => n.willSucceed);
   const visibleNegotiations = hideFailedPanels ? successfulNegotiations : negotiations;
 
-  const speedLabel = `${Math.round(typingSpeed * 100)}%`;
+  const handleScreenClick = useCallback(() => {
+    if (!isRunning) {
+      startDemo();
+    }
+  }, [isRunning, startDemo]);
 
   return (
-    <div className="h-screen overflow-hidden bg-background flex flex-col">
-      <BargainHeader />
-
-      {/* Stats Bar - hidden when running */}
+    <div 
+      className="h-screen overflow-hidden bg-background flex flex-col cursor-pointer"
+      onClick={handleScreenClick}
+    >
+      {/* Click to start overlay */}
       {!isRunning && (
-        <div className="border-b border-border bg-card/50 flex-shrink-0">
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-6 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" />
-                <span className="font-mono text-sm">
-                  <span className="text-muted-foreground">BUYERS:</span>{" "}
-                  <span className="text-foreground font-semibold">47</span>
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Percent className="w-4 h-4 text-green-500" />
-                <span className="font-mono text-sm">
-                  <span className="text-muted-foreground">TARGET:</span>{" "}
-                  <span className="text-green-500 font-semibold">5-10%</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <Gauge className="w-4 h-4 text-muted-foreground" />
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-mono w-12">{speedLabel}</span>
-                  <Slider
-                    value={[typingSpeed]}
-                    onValueChange={(v) => setTypingSpeed(v[0])}
-                    min={0.25}
-                    max={3}
-                    step={0.05}
-                    className="w-32"
-                  />
-                </div>
-              </div>
-
-              <Button onClick={startDemo} className="gap-2">
-                <Play className="w-4 h-4" />
-                Launch Agents
-              </Button>
-            </div>
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="text-center animate-pulse">
+            <p className="text-2xl font-semibold text-foreground">Click anywhere to start</p>
+            <p className="text-muted-foreground mt-2">Watch AI agents negotiate discounts</p>
           </div>
         </div>
       )}
